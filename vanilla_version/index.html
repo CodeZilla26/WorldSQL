@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SQL Wordle: Aprende SQL Jugando (Teórico & Práctico)</title>
+    <!-- Favicon SVG con icono de base de datos -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗄️</text></svg>">
+    <!-- Google Fonts Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Header Principal -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-badge">
+                <i class="ph-bold ph-database"></i>
+            </div>
+            <div class="logo-text">
+                <h1>SQL <span>Wordle</span></h1>
+                <p>Aprende SQL con Desafíos y Preguntas</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button id="btn-sound" class="icon-btn" title="Activar/Silenciar Efectos de Sonido">
+                <i class="ph-bold ph-speaker-high" id="sound-icon"></i>
+            </button>
+            <button id="btn-stats" class="icon-btn" title="Estadísticas de Aprendizaje">
+                <i class="ph-bold ph-chart-bar"></i>
+            </button>
+            <button id="btn-map" class="icon-btn" title="Catálogo de Preguntas y Temas">
+                <i class="ph-bold ph-list-numbers"></i>
+            </button>
+            <button id="btn-help" class="icon-btn" title="Cómo se Juega">
+                <i class="ph-bold ph-question"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main>
+
+        <!-- Tarjeta de Desafío / Pregunta Actual -->
+        <section class="question-card" id="question-card">
+            <div class="question-header">
+                <div class="badges-group">
+                    <span class="badge badge-category" id="q-category">Consultas DML</span>
+                    <span class="badge badge-focus" id="q-focus">Práctico</span>
+                </div>
+                <span class="question-counter" id="q-counter">Desafío 1 de 22</span>
+            </div>
+
+            <!-- Pregunta Textual -->
+            <h2 class="question-prompt" id="q-prompt">
+                ¿Qué instrucción fundamental de SQL se utiliza para consultar y recuperar columnas de datos desde una base de datos?
+            </h2>
+
+            <!-- Previsualización de Código SQL con el hueco a completar -->
+            <div class="code-preview-container" id="q-code-container">
+                <div class="code-line" id="q-code-content">
+                    <span class="sql-slot">[ ??? ]</span> nombre, anio, tipo 
+FROM movies_obra 
+WHERE anio >= 2020;
+                </div>
+            </div>
+
+            <!-- Pista y Longitud -->
+            <div class="question-footer">
+                <div class="word-length-hint" id="q-length-hint">
+                    <i class="ph-bold ph-text-t"></i>
+                    <span id="word-len-label">Palabra clave de 6 letras</span>
+                </div>
+                <button class="btn-hint" id="btn-show-hint">
+                    <i class="ph-bold ph-lightbulb"></i> Ver Pista
+                </button>
+            </div>
+
+            <!-- Banner Desplegable de Pista -->
+            <div class="hint-banner" id="hint-banner">
+                <span id="hint-text"></span>
+            </div>
+        </section>
+
+        <!-- Tablero Wordle Interactivo -->
+        <section class="wordle-board-container">
+            <div class="wordle-board" id="wordle-board">
+                <!-- Filas generadas dinámicamente según la longitud de la palabra -->
+            </div>
+        </section>
+
+        <!-- Teclado Virtual en Pantalla -->
+        <section class="virtual-keyboard" id="virtual-keyboard">
+            <div class="keyboard-row">
+                <button class="key-btn" data-key="Q">Q</button>
+                <button class="key-btn" data-key="W">W</button>
+                <button class="key-btn" data-key="E">E</button>
+                <button class="key-btn" data-key="R">R</button>
+                <button class="key-btn" data-key="T">T</button>
+                <button class="key-btn" data-key="Y">Y</button>
+                <button class="key-btn" data-key="U">U</button>
+                <button class="key-btn" data-key="I">I</button>
+                <button class="key-btn" data-key="O">O</button>
+                <button class="key-btn" data-key="P">P</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key-btn" data-key="A">A</button>
+                <button class="key-btn" data-key="S">S</button>
+                <button class="key-btn" data-key="D">D</button>
+                <button class="key-btn" data-key="F">F</button>
+                <button class="key-btn" data-key="G">G</button>
+                <button class="key-btn" data-key="H">H</button>
+                <button class="key-btn" data-key="J">J</button>
+                <button class="key-btn" data-key="K">K</button>
+                <button class="key-btn" data-key="L">L</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key-btn wide-key" data-key="ENTER">ENTER</button>
+                <button class="key-btn" data-key="Z">Z</button>
+                <button class="key-btn" data-key="X">X</button>
+                <button class="key-btn" data-key="C">C</button>
+                <button class="key-btn" data-key="V">V</button>
+                <button class="key-btn" data-key="B">B</button>
+                <button class="key-btn" data-key="N">N</button>
+                <button class="key-btn" data-key="M">M</button>
+                <button class="key-btn wide-key" data-key="BACKSPACE">
+                    <i class="ph-bold ph-backspace"></i>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toasts de Notificación Rápida -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ======================================================================
+         MODAL 1: EXPLICACIÓN TEÓRICA Y PRÁCTICA (POST-JUEGO)
+         ====================================================================== -->
+    <div class="modal-overlay" id="explanation-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>
+                    <i class="ph-bold ph-graduation-cap text-emerald-400"></i>
+                    <span>Explicación Teórica y Práctica</span>
+                </h3>
+                <button class="icon-btn close-modal-btn" data-modal="explanation-modal">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Banner de Resultado -->
+                <div class="explanation-banner" id="modal-banner">
+                    <div id="modal-banner-icon"></div>
+                    <div>
+                        <div id="modal-banner-title">¡Respuesta Correcta!</div>
+                        <div style="font-size: 0.8rem; font-weight: normal; margin-top: 2px;">
+                            Palabra clave de SQL: <strong class="solution-badge" id="modal-solution-word">SELECT</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Concepto Teórico -->
+                <div class="concept-box">
+                    <span class="concept-box-title">
+                        <i class="ph-bold ph-book-open"></i> Concepto Fundamental
+                    </span>
+                    <p id="modal-concept-text"></p>
+                </div>
+
+                <!-- Sintaxis Estándar -->
+                <div class="concept-box">
+                    <span class="concept-box-title">
+                        <i class="ph-bold ph-code"></i> Sintaxis Estándar en SQL
+                    </span>
+                    <div class="code-box-example" id="modal-syntax-code"></div>
+                </div>
+
+                <!-- En el Mundo Real / Comic Tracker -->
+                <div class="concept-box">
+                    <span class="concept-box-title">
+                        <i class="ph-bold ph-hard-drives"></i> En el Mundo Real & Django ORM
+                    </span>
+                    <p id="modal-real-example"></p>
+                </div>
+
+                <!-- Regla de Oro -->
+                <div class="golden-rule-box">
+                    <strong>💡 Regla de Oro: </strong>
+                    <span id="modal-golden-rule"></span>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary close-modal-btn" data-modal="explanation-modal">
+                    Repasar Tablero
+                </button>
+                <button class="btn-primary" id="btn-next-question">
+                    <span>Siguiente Desafío</span>
+                    <i class="ph-bold ph-arrow-right" style="margin-left: 4px;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         MODAL 2: MAPA DE PREGUNTAS Y TEMAS (SELECTOR DE PREGUNTAS)
+         ====================================================================== -->
+    <div class="modal-overlay" id="map-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>
+                    <i class="ph-bold ph-compass text-cyan-400"></i>
+                    <span>Mapa de Aprendizaje SQL</span>
+                </h3>
+                <button class="icon-btn close-modal-btn" data-modal="map-modal">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.82rem; color: var(--text-muted);">
+                    Selecciona cualquier pregunta para practicar. Los desafíos resueltos quedan marcados con verde.
+                </p>
+                <div class="questions-grid" id="questions-grid">
+                    <!-- Generado dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary close-modal-btn" data-modal="map-modal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         MODAL 3: ESTADÍSTICAS DEL ESTUDIANTE
+         ====================================================================== -->
+    <div class="modal-overlay" id="stats-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>
+                    <i class="ph-bold ph-trophy text-amber-400"></i>
+                    <span>Tus Estadísticas</span>
+                </h3>
+                <button class="icon-btn close-modal-btn" data-modal="stats-modal">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-played">0</div>
+                        <div class="stat-label">Jugadas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-solved">0</div>
+                        <div class="stat-label">Acertadas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-streak">0</div>
+                        <div class="stat-label">Racha</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-max-streak">0</div>
+                        <div class="stat-label">Mejor Racha</div>
+                    </div>
+                </div>
+
+                <div class="concept-box" style="margin-top: 8px;">
+                    <span class="concept-box-title">
+                        <i class="ph-bold ph-check-circle"></i> Progreso Total del Curso
+                    </span>
+                    <div style="background: #1e293b; height: 12px; border-radius: 6px; overflow: hidden; margin-top: 6px;">
+                        <div id="stat-progress-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.4s ease;"></div>
+                    </div>
+                    <span id="stat-progress-text" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">0 de 22 desafíos completados (0%)</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btn-reset-stats" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3);">
+                    Reiniciar Progreso
+                </button>
+                <button class="btn-primary close-modal-btn" data-modal="stats-modal">
+                    Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================
+         MODAL 4: CÓMO SE JUEGA (INSTRUCCIONES)
+         ====================================================================== -->
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>
+                    <i class="ph-bold ph-info text-cyan-400"></i>
+                    <span>¿Cómo se Juega a SQL Wordle?</span>
+                </h3>
+                <button class="icon-btn close-modal-btn" data-modal="help-modal">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    A diferencia del Wordle tradicional, <strong>aquí NO juegas a ciegas</strong>. Cada nivel te presenta una <strong>pregunta teórica o un fragmento de código SQL con un hueco a completar</strong>.
+                </p>
+
+                <div class="concept-box">
+                    <span class="concept-box-title">
+                        <i class="ph-bold ph-lightbulb-filament"></i> Mecánica de Colores:
+                    </span>
+                    <p style="margin-bottom: 6px;">Escribe tu respuesta con el teclado y presiona <strong>ENTER</strong>. Cada letra cambiará de color:</p>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <span style="background: var(--tile-correct); color: #fff; font-weight: 800; font-family: var(--font-mono); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">S</span>
+                        <span><strong>Verde:</strong> La letra está en la palabra y en la posición exacta.</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <span style="background: var(--tile-present); color: #fff; font-weight: 800; font-family: var(--font-mono); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">E</span>
+                        <span><strong>Amarillo:</strong> La letra está en la palabra, pero en otra casilla.</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: var(--tile-absent); color: #94a3b8; font-weight: 800; font-family: var(--font-mono); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">X</span>
+                        <span><strong>Gris:</strong> La letra NO forma parte de la palabra clave.</span>
+                    </div>
+                </div>
+
+                <div class="golden-rule-box">
+                    <strong>🎓 Enfoque Didáctico:</strong>
+                    Al terminar cada ronda (aciertes o uses tus 5 intentos), recibirás una <strong>explicación técnica detallada</strong> con la sintaxis, ejemplos del mundo real y la regla de oro para convertirte en experto de bases de datos.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary close-modal-btn" data-modal="help-modal">
+                    ¡Entendido, a Jugar!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de la Aplicación -->
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

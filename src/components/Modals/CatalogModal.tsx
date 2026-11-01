@@ -1,6 +1,17 @@
 import React, { useState, useMemo } from 'react';
-import { Compass, X, Search, CheckCircle2, ChevronRight, Check } from 'lucide-react';
-import type { Question } from '../../types/game';
+import {
+  Compass,
+  X,
+  Search,
+  CheckCircle2,
+  ChevronRight,
+  Check,
+  Terminal,
+  Layers,
+  Bug,
+  Briefcase
+} from 'lucide-react';
+import type { Question, TipoPregunta } from '../../types/game';
 
 interface CatalogModalProps {
   isOpen: boolean;
@@ -22,13 +33,8 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
   onSelectQuestion
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    questions.forEach(q => set.add(q.categoria));
-    return ['ALL', ...Array.from(set)];
-  }, [questions]);
+  const [selectedNivel, setSelectedNivel] = useState<string>('ALL');
+  const [selectedTipo, setSelectedTipo] = useState<string>('ALL');
 
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
@@ -38,17 +44,31 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
         q.pregunta.toLowerCase().includes(searchTerm.toLowerCase()) ||
         q.categoria.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesCategory = selectedCategory === 'ALL' || q.categoria === selectedCategory;
+      const matchesNivel = selectedNivel === 'ALL' || q.nivel === selectedNivel;
+      const matchesTipo = selectedTipo === 'ALL' || q.tipo === selectedTipo;
 
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesNivel && matchesTipo;
     });
-  }, [questions, searchTerm, selectedCategory]);
+  }, [questions, searchTerm, selectedNivel, selectedTipo]);
 
   if (!isOpen) return null;
 
   const totalCount = questions.length;
   const solvedCount = solvedIds.length;
   const percentage = Math.round((solvedCount / totalCount) * 100);
+
+  const getTipoIcon = (tipo: TipoPregunta) => {
+    switch (tipo) {
+      case 'debugging':
+        return <Bug size={11} className="text-rose" />;
+      case 'entrevista':
+        return <Briefcase size={11} className="text-purple" />;
+      case 'concepto':
+        return <Layers size={11} className="text-indigo" />;
+      default:
+        return <Terminal size={11} className="text-cyan" />;
+    }
+  };
 
   return (
     <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
@@ -57,7 +77,7 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
           <div className="modal-title-group">
             <Compass size={22} className="text-cyan" />
             <div>
-              <h3>Mapa de Aprendizaje</h3>
+              <h3>Mapa de Aprendizaje por Niveles</h3>
               <p className="modal-subtitle">{topicName}</p>
             </div>
           </div>
@@ -70,50 +90,77 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
           {/* Barra de progreso global */}
           <div className="catalog-progress-card">
             <div className="progress-label-row">
-              <span>Progreso del Curso</span>
+              <span>Progreso Global del Curso</span>
               <strong>
-                {solvedCount} de {totalCount} completados ({percentage}%)
+                {solvedCount} de {totalCount} conceptos dominados ({percentage}%)
               </strong>
             </div>
             <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{ width: `${percentage}%` }}
-              />
+              <div className="progress-fill" style={{ width: `${percentage}%` }} />
             </div>
           </div>
 
-          {/* Barra de búsqueda y filtros */}
-          <div className="catalog-filters-row">
-            <div className="search-input-wrapper">
-              <Search size={16} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Buscar comando, concepto o categoría..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  className="clear-search-btn"
-                  onClick={() => setSearchTerm('')}
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
+          {/* Barra de búsqueda */}
+          <div className="search-input-wrapper">
+            <Search size={16} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Buscar por comando, concepto, debugging o categoría..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="clear-search-btn"
+                onClick={() => setSearchTerm('')}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
 
+          {/* Filtros por Nivel (Junior, Semi-Senior, Senior) */}
+          <div className="filters-section-group">
+            <span className="filter-group-label">Filtrar por Nivel de Carrera:</span>
             <div className="category-chips-scroll">
-              {categories.map(cat => (
+              {[
+                { id: 'ALL', label: 'Todos los Niveles' },
+                { id: 'Junior', label: '🌱 Junior' },
+                { id: 'Semi-Senior', label: '⚡ Semi-Senior (Mid)' },
+                { id: 'Senior', label: '🔥 Senior & DBA' }
+              ].map(item => (
                 <button
-                  key={cat}
+                  key={`nivel-${item.id}`}
                   type="button"
-                  className={`category-chip ${selectedCategory === cat ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(cat)}
+                  className={`category-chip ${selectedNivel === item.id ? 'active' : ''}`}
+                  onClick={() => setSelectedNivel(item.id)}
                 >
-                  {cat === 'ALL' ? 'Todos los Temas' : cat}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filtros por Modalidad de Pregunta */}
+          <div className="filters-section-group">
+            <span className="filter-group-label">Filtrar por Formato:</span>
+            <div className="category-chips-scroll">
+              {[
+                { id: 'ALL', label: 'Todas las Modalidades' },
+                { id: 'codigo-slot', label: '💻 Consultas SQL' },
+                { id: 'concepto', label: '📚 Conceptos Puros' },
+                { id: 'debugging', label: '🐛 Debugging' },
+                { id: 'entrevista', label: '💼 Entrevista Técnica' }
+              ].map(item => (
+                <button
+                  key={`tipo-${item.id}`}
+                  type="button"
+                  className={`category-chip ${selectedTipo === item.id ? 'active' : ''}`}
+                  onClick={() => setSelectedTipo(item.id)}
+                >
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -123,13 +170,20 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
           <div className="catalog-grid">
             {filteredQuestions.length === 0 ? (
               <div className="empty-catalog-message">
-                <p>No se encontraron desafíos que coincidan con tu búsqueda.</p>
+                <p>No se encontraron desafíos que coincidan con los filtros seleccionados.</p>
               </div>
             ) : (
               filteredQuestions.map(q => {
                 const originalIndex = questions.findIndex(orig => orig.id === q.id);
                 const isSolved = solvedIds.includes(q.id);
                 const isCurrent = originalIndex === currentQuestionIndex;
+
+                const nivelBadgeColor =
+                  q.nivel === 'Junior'
+                    ? 'chip-junior'
+                    : q.nivel === 'Semi-Senior'
+                    ? 'chip-mid'
+                    : 'chip-senior';
 
                 return (
                   <div
@@ -153,6 +207,17 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
                       </div>
                       <div className="item-details">
                         <div className="item-header-tags">
+                          <span className={`item-level-tag ${nivelBadgeColor}`}>{q.nivel}</span>
+                          <span className="item-type-tag">
+                            {getTipoIcon(q.tipo)}
+                            {q.tipo === 'debugging'
+                              ? 'Bug'
+                              : q.tipo === 'entrevista'
+                              ? 'Entrevista'
+                              : q.tipo === 'concepto'
+                              ? 'Concepto'
+                              : 'Código'}
+                          </span>
                           <span className="item-category-tag">{q.categoria}</span>
                           <span className="item-letters-tag">{q.palabra.length} letras</span>
                           {isSolved && (

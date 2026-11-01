@@ -109,7 +109,7 @@ export const StatsModal: React.FC<StatsModalProps> = ({
               <span>Distribución de Aciertos por Intento</span>
             </div>
             <div className="distribution-bars">
-              {[1, 2, 3, 4, 5].map(attemptNum => {
+              {[1, 2, 3, 4, 5, 6].map(attemptNum => {
                 const count = stats.guessDistribution[attemptNum] || 0;
                 const percentWidth = Math.max(8, Math.round((count / maxGuessCount) * 100));
 

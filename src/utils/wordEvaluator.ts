@@ -77,3 +77,53 @@ export function computeKeyboardStatuses(
 
   return map;
 }
+
+/**
+ * Validador para el Modo Difícil (Hard Mode):
+ * Exige que cualquier pista verde (correcta) y amarilla (presente) revelada en intentos anteriores
+ * sea reutilizada estrictamente en el siguiente intento.
+ */
+export function validateHardMode(
+  guess: string,
+  evaluations: TileEvaluation[][]
+): { valid: boolean; reason?: string } {
+  if (evaluations.length === 0) return { valid: true };
+
+  const guessUpper = guess.toUpperCase();
+
+  // 1. Validar que las letras verdes permanezcan en la misma posición
+  for (const row of evaluations) {
+    for (let i = 0; i < row.length; i++) {
+      const tile = row[i];
+      if (tile.status === 'correct') {
+        if (guessUpper[i] !== tile.letter) {
+          return {
+            valid: false,
+            reason: `Modo Difícil: La letra '${tile.letter}' debe estar en la casilla ${i + 1}`
+          };
+        }
+      }
+    }
+  }
+
+  // 2. Validar que las letras amarillas estén incluidas en la palabra
+  const requiredLetters = new Set<string>();
+  for (const row of evaluations) {
+    for (const tile of row) {
+      if (tile.status === 'present') {
+        requiredLetters.add(tile.letter);
+      }
+    }
+  }
+
+  for (const letter of requiredLetters) {
+    if (!guessUpper.includes(letter)) {
+      return {
+        valid: false,
+        reason: `Modo Difícil: El intento debe contener la letra '${letter}'`
+      };
+    }
+  }
+
+  return { valid: true };
+}

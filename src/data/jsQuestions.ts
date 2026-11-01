@@ -4,6 +4,8 @@ export const JS_QUESTIONS: Question[] = [
   {
     id: 1,
     palabra: "CONST",
+    tipo: "codigo-slot",
+    nivel: "Junior",
     categoria: "Variables y Alcance",
     enfoque: "Práctico",
     dificultad: "Básico",
@@ -20,6 +22,8 @@ export const JS_QUESTIONS: Question[] = [
   {
     id: 2,
     palabra: "AWAIT",
+    tipo: "codigo-slot",
+    nivel: "Semi-Senior",
     categoria: "Asincronía & Promesas",
     enfoque: "Práctico",
     dificultad: "Intermedio",
@@ -36,6 +40,8 @@ export const JS_QUESTIONS: Question[] = [
   {
     id: 3,
     palabra: "ASYNC",
+    tipo: "codigo-slot",
+    nivel: "Junior",
     categoria: "Asincronía & Promesas",
     enfoque: "Práctico",
     dificultad: "Básico",
@@ -52,6 +58,8 @@ export const JS_QUESTIONS: Question[] = [
   {
     id: 4,
     palabra: "FETCH",
+    tipo: "codigo-slot",
+    nivel: "Junior",
     categoria: "Peticiones Web & HTTP",
     enfoque: "Práctico",
     dificultad: "Básico",
@@ -68,6 +76,8 @@ export const JS_QUESTIONS: Question[] = [
   {
     id: 5,
     palabra: "FILTER",
+    tipo: "codigo-slot",
+    nivel: "Semi-Senior",
     categoria: "Métodos de Arrays",
     enfoque: "Práctico",
     dificultad: "Intermedio",

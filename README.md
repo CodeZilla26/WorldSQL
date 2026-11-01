@@ -1,109 +1,82 @@
-# 🗄️ DevWordle: Aprende SQL & Desarrollo de Software Jugando
+# 🗄️ DevWordle SQL: Entrenador Interactivo de Bases de Datos
 
-Una aplicación interactiva moderna construida con **React 19 + TypeScript + Vite**, inspirada en la dinámica visual de Wordle pero transformada en un **entrenador didáctico de programación (teórico y práctico)**.
+Una aplicación web moderna desarrollada con **React 19 + TypeScript + Vite**, inspirada en la mecánica visual de Wordle pero diseñada como una **herramienta de aprendizaje y preparación para entrevistas técnicas de SQL y bases de datos relacionales**.
 
-> **Enfoque Pedagógico:** No se adivina a ciegas. Cada ronda presenta un desafío conceptual y un fragmento de código real con una casilla a completar (`[ ??? ]`), permitiendo dominar la sintaxis y buenas prácticas de la industria.
+> **Enfoque Pedagógico:** No se adivina a ciegas. El juego reta al estudiante mediante desafíos conceptuales, consultas prácticas, análisis de errores de producción (debugging) y escenarios de entrevistas laborales.
 
 ---
 
-## ✨ Características Principales
+## 🎯 1. Modalidades Diversificadas de Pregunta
 
-1. **Rutas Multi-Tema Escalables (Arquitectura Abierta):**
-   - 🐬 **SQL & Bases de Datos Relacionales:** 30 desafíos detallados basados en el manual definitivo (`SQL.md`), cubriendo DML, DDL, DQL, TCL, JOINs (`INNER` y `LEFT`), Agrupaciones (`GROUP BY`, `HAVING`), Restricciones (`PRIMARY KEY`, `FOREIGN KEY`, `CHECK`, `DEFAULT`), Transacciones (`COMMIT`, `ROLLBACK`) e Índices (`INDEX`).
-   - ⚡ **JavaScript Moderno:** Desafíos iniciales (`CONST`, `AWAIT`, `ASYNC`, `FETCH`, `FILTER`).
-   - 🌿 **Git & Version Control:** Desafíos iniciales (`COMMIT`, `BRANCH`, `MERGE`, `CLONE`, `STASH`).
+En lugar de limitarse a llenar huecos de código, los desafíos se clasifican en **4 formatos didácticos**:
 
-2. **Cuadrícula Dinámica por Longitud de Palabra:**
-   - La cuadrícula y el teclado se adaptan de forma reactiva al tamaño de cada comando (de 4 a 8 casillas).
+1. **💻 Consultas SQL Prácticas (`codigo-slot`):** Deducir la cláusula faltante en el hueco `[ ??? ]` de un script SQL real (`SELECT`, `WHERE`, `INNER`, `LIMIT`, etc.).
+2. **📚 Conceptos Puros & Arquitectura (`concepto`):** Preguntas teóricas sobre arquitectura de bases de datos, propiedades ACID, esquemas y modelos relacionales acompañadas de analogías del mundo real (`ATOMIC`, `SCHEMA`, `TABLE`, `CASCADE`).
+3. **🐛 Modo Debugging (`debugging`):** Fragmentos con errores de sintaxis, consultas que descartan datos por un JOIN incorrecto o comandos peligrosos sin condición, retando al usuario a escribir la palabra clave que lo soluciona (`HAVING`, `LEFT`, `UPDATE`, `ROLLBACK`).
+4. **💼 Preguntas de Entrevista Técnica (`entrevista`):** Situaciones reales planteadas en entrevistas de empresas de software (diferencias entre `DELETE` y `TRUNCATE`, optimización con `INDEX`, diagnósticos con `EXPLAIN`, o consultas con `DISTINCT` y `UNION`).
 
-3. **Explicación Profunda Post-Ronda:**
-   - **Concepto Fundamental:** Explicación teórica precisa.
-   - **Sintaxis Estándar:** Bloque de código con botón para copiar al portapapeles.
-   - **En el Mundo Real:** Integración con frameworks y ORMs modernos (Django, Node.js, Spring).
-   - **Regla de Oro:** Advertencias cruciales para no cometer errores en entornos de producción.
+---
 
-4. **Sintetizador de Audio Nativo (Web Audio API):**
-   - Click mecánico al teclear, chime armónico al voltear cada letra, acorde de victoria y sonido de alerta de error, sin archivos MP3 externos.
+## 🏆 2. Sistema de Niveles de Carrera
 
-5. **Guía Rápida de SQL Integrada (Cheat Sheet):**
-   - Pestañas interactivas con el orden de ejecución real del motor de base de datos, mapa de sublenguajes (DDL, DML, DQL, TCL), comparativa gráfica de JOINs y decálogo de buenas prácticas.
+Los desafíos están organizados en 3 rangos progresivos:
 
-6. **100% Responsivo:**
-   - Diseñado y optimizado para pantallas táctiles de móviles (320px - 480px), tablets y escritorios de alta resolución.
+* 🌱 **Junior (Nivel 1):** Fundamentos de tablas, sintaxis esencial, operaciones CRUD (`SELECT`, `FROM`, `WHERE`, `INSERT`, `VALUES`, `UPDATE`, `DELETE`, `COUNT`, `ORDER`, `LIMIT`, `LIKE`, `NULL`, `DEFAULT`).
+* ⚡ **Semi-Senior / Mid (Nivel 2):** Relaciones entre tablas, tipos de uniones (`INNER` vs `LEFT JOIN`), agrupaciones (`GROUP BY`, `HAVING`), restricciones de integridad (`PRIMARY KEY`, `FOREIGN KEY`, `CHECK`), operaciones de conjuntos (`UNION`) y acciones referenciales (`CASCADE`).
+* 🔥 **Senior & DBA (Nivel 3):** Principios ACID (`ATOMIC`), transacciones irrevocables (`COMMIT`, `ROLLBACK`), rendimiento y optimización con árboles B-Tree (`INDEX`), diagnóstico de planes de ejecución (`EXPLAIN`), vaciado masivo eficiente (`TRUNCATE`) y comandos destructivos (`DROP`).
 
-7. **Estadísticas y Persistencia:**
-   - Guarda tu progreso, rachas, distribución de intentos y desafíos completados de forma persistente en `localStorage`.
+---
+
+## ⚙️ 3. Reglas y Modos de Dificultad Configurables
+
+El usuario puede personalizar la exigencia del juego desde el botón de ajustes en la cabecera:
+
+* 🟢 **Modo Fácil (Principiante):**
+  - **6 intentos** disponibles.
+  - Pista didáctica del concepto visible automáticamente.
+  - **Botón de Asistencia:** Permite descartar 3 letras incorrectas del teclado con un clic.
+  - Ideal para estudiantes que dan sus primeros pasos en SQL.
+
+* 🔵 **Modo Normal (Estándar):**
+  - **5 intentos** con reglas tradicionales de Wordle.
+  - Pistas bajo demanda cuando las necesites.
+  - El balance ideal entre desafío mental y aprendizaje.
+
+* 🔴 **Modo Difícil (Entrevista Técnica / Hard Mode):**
+  - **4 intentos** exactos.
+  - **Regla Estricta:** Toda letra verde (correcta) DEBE mantenerse en la misma posición en los siguientes intentos, y toda letra amarilla DEBE incluirse en los próximos intentos.
+  - Pistas bloqueadas hasta el último intento de emergencia.
+  - Simula la presión y precisión de una prueba técnica en vivo.
+
+---
+
+## 📚 4. Recursos Didácticos Integrados
+
+* **Explicación Profunda Post-Ronda:** Concepto fundamental, sintaxis estándar copiable al portapapeles, casos reales con ORMs modernos (Django / Node.js) y la **Regla de Oro** para evitar caídas en producción.
+* **Manual Rápido Interactivo (Cheat Sheet):** Pestañas con el orden de ejecución real del motor de BD (FROM ➔ WHERE ➔ GROUP BY ➔ HAVING ➔ SELECT ➔ ORDER BY ➔ LIMIT), sublenguajes (DDL, DML, DQL, TCL), comparativa gráfica de JOINs y decálogo de buenas prácticas.
+* **Mapa de Aprendizaje y Catálogo:** Filtros combinados por Nivel (Junior, Semi-Senior, Senior), por Formato (Consultas, Conceptos, Debugging, Entrevista) y buscador dinámico.
+* **Sintetizador Web Audio:** Efectos de sonido mecánicos y armónicos generados en tiempo real sin requerir archivos MP3 externos.
 
 ---
 
 ## 🚀 Cómo Ejecutar el Proyecto
 
-Asegúrate de tener instalado [Node.js](https://nodejs.org/) (v18+).
-
 ```bash
-# 1. Entrar al directorio
+# 1. Acceder al directorio
 cd C:\Users\Lenovo\Documents\PROYECTOS\sql_wordle
 
-# 2. Instalar dependencias (si no se han instalado)
+# 2. Instalar dependencias
 npm install
 
-# 3. Iniciar el servidor de desarrollo Vite con HMR
+# 3. Iniciar el servidor Vite con Hot Module Replacement (HMR)
 npm run dev
 ```
 
-Abre en tu navegador la URL que muestra la terminal (usualmente `http://localhost:5173`).
+Abre en tu navegador la URL indicada en la terminal:
+👉 **`http://localhost:5173`**
 
-### Generar Build de Producción
+### Compilar para Producción
 ```bash
 npm run build
 npm run preview
 ```
-
----
-
-## 📁 Estructura del Código
-
-```text
-src/
-├── types/
-│   └── game.ts               # Interfaces TypeScript (Question, Topic, Stats, etc.)
-├── data/
-│   ├── topics.ts             # Registro central de temas y tecnologías
-│   ├── sqlQuestions.ts       # 30 desafíos detallados de SQL (basados en SQL.md)
-│   ├── jsQuestions.ts        # Desafíos de JavaScript
-│   └── gitQuestions.ts       # Desafíos de Git
-├── hooks/
-│   ├── useGameState.ts       # Máquina de estados Wordle, validaciones y confeti
-│   ├── useAudio.ts           # Control de sonido y efectos reactivos
-│   └── useLocalStorage.ts    # Persistencia local reactiva
-├── components/
-│   ├── Header.tsx            # Barra superior con selector de tema y accesos rápidos
-│   ├── QuestionCard.tsx      # Tarjeta con código SQL y slot [ ??? ]
-│   ├── WordleBoard.tsx       # Cuadrícula dinámica con animación 3D de volteo
-│   ├── Keyboard.tsx          # Teclado en pantalla táctil con colores en tiempo real
-│   ├── Toast.tsx             # Alertas flotantes
-│   └── Modals/
-│       ├── ExplanationModal.tsx  # Análisis pedagógico post-partida
-│       ├── CatalogModal.tsx      # Mapa de aprendizaje con buscador y filtros
-│       ├── StatsModal.tsx        # Métricas del estudiante y distribución
-│       ├── CheatSheetModal.tsx   # Manual de SQL extraído de SQL.md
-│       ├── TopicSelectModal.tsx  # Switcher de temas (SQL, JS, Git)
-│       └── HelpModal.tsx         # Guía de juego y colores
-├── utils/
-│   ├── wordEvaluator.ts      # Algoritmo de evaluación Wordle con conteo de duplicados
-│   └── soundSynth.ts         # Sintetizador nativo con osciladores Web Audio
-├── App.tsx                   # Coordinador principal de la app
-├── App.css                   # Estilos responsivos y animaciones
-├── index.css                 # Variables de diseño y tema oscuro
-└── main.tsx                  # Entrada de React 19
-```
-
----
-
-## ➕ Cómo Agregar Nuevos Temas o Preguntas
-
-Para agregar un nuevo tema (por ejemplo, **Python** o **React**):
-
-1. Crea un archivo en `src/data/<tema>Questions.ts` exportando tu arreglo de `Question[]`.
-2. En `src/data/topics.ts`, importa el arreglo y agrégalo a la lista `TOPICS`.
-3. ¡Listo! El selector de temas, el teclado, el mapa de desafíos y las estadísticas funcionarán automáticamente para esa nueva materia.

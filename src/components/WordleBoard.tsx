@@ -1,6 +1,5 @@
 import React from 'react';
 import type { TileEvaluation } from '../types/game';
-import { MAX_ATTEMPTS } from '../hooks/useGameState';
 
 interface WordleBoardProps {
   wordLength: number;
@@ -9,6 +8,7 @@ interface WordleBoardProps {
   currentGuess: string;
   isShakingRow: boolean;
   isRowEvaluating: boolean;
+  maxAttempts: number;
 }
 
 export const WordleBoard: React.FC<WordleBoardProps> = ({
@@ -17,9 +17,10 @@ export const WordleBoard: React.FC<WordleBoardProps> = ({
   evaluations,
   currentGuess,
   isShakingRow,
-  isRowEvaluating
+  isRowEvaluating,
+  maxAttempts
 }) => {
-  const rows = Array.from({ length: MAX_ATTEMPTS });
+  const rows = Array.from({ length: maxAttempts });
 
   return (
     <section className="board-container" aria-label="Tablero Wordle">

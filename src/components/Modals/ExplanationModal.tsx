@@ -10,7 +10,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Copy,
-  Check
+  Check,
+  Bug,
+  Briefcase,
+  Layers,
+  Terminal
 } from 'lucide-react';
 import type { Question, GameStatus } from '../../types/game';
 
@@ -43,13 +47,32 @@ export const ExplanationModal: React.FC<ExplanationModalProps> = ({
     }
   };
 
+  const TipoIcon =
+    question.tipo === 'debugging'
+      ? Bug
+      : question.tipo === 'entrevista'
+      ? Briefcase
+      : question.tipo === 'concepto'
+      ? Layers
+      : Terminal;
+
   return (
     <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
       <div className="modal-window explanation-window" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-title-group">
             <GraduationCap size={22} className="text-emerald" />
-            <h3>Explicación Teórica & Práctica</h3>
+            <div>
+              <h3>Explicación Teórica & Práctica</h3>
+              <div className="modal-meta-pills">
+                <span className="badge badge-level-modal">{question.nivel}</span>
+                <span className="badge badge-tipo-modal">
+                  <TipoIcon size={12} />
+                  {question.tipo.toUpperCase()}
+                </span>
+                <span className="modal-category-sub">{question.categoria}</span>
+              </div>
+            </div>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Cerrar modal">
             <X size={18} />
@@ -80,26 +103,28 @@ export const ExplanationModal: React.FC<ExplanationModalProps> = ({
           </div>
 
           {/* 2. Sintaxis Estándar */}
-          <div className="pedagogy-card">
-            <div className="pedagogy-header">
-              <div className="flex-center gap-6">
-                <Code2 size={16} className="text-amber" />
-                <h5>Sintaxis Estándar</h5>
+          {question.explicacion.sintaxis && (
+            <div className="pedagogy-card">
+              <div className="pedagogy-header">
+                <div className="flex-center gap-6">
+                  <Code2 size={16} className="text-amber" />
+                  <h5>Sintaxis Estándar</h5>
+                </div>
+                <button
+                  type="button"
+                  className="btn-copy-code"
+                  onClick={handleCopySyntax}
+                  title="Copiar sintaxis al portapapeles"
+                >
+                  {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
+                  <span>{copied ? 'Copiado' : 'Copiar'}</span>
+                </button>
               </div>
-              <button
-                type="button"
-                className="btn-copy-code"
-                onClick={handleCopySyntax}
-                title="Copiar sintaxis al portapapeles"
-              >
-                {copied ? <Check size={14} className="text-emerald" /> : <Copy size={14} />}
-                <span>{copied ? 'Copiado' : 'Copiar'}</span>
-              </button>
+              <pre className="code-box-pre">
+                <code>{question.explicacion.sintaxis}</code>
+              </pre>
             </div>
-            <pre className="code-box-pre">
-              <code>{question.explicacion.sintaxis}</code>
-            </pre>
-          </div>
+          )}
 
           {/* 3. En el Mundo Real */}
           <div className="pedagogy-card">

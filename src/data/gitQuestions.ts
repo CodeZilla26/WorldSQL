@@ -4,6 +4,8 @@ export const GIT_QUESTIONS: Question[] = [
   {
     id: 1,
     palabra: "COMMIT",
+    tipo: "codigo-slot",
+    nivel: "Junior",
     categoria: "Control de Versiones",
     enfoque: "Práctico",
     dificultad: "Básico",
@@ -20,6 +22,8 @@ export const GIT_QUESTIONS: Question[] = [
   {
     id: 2,
     palabra: "BRANCH",
+    tipo: "codigo-slot",
+    nivel: "Junior",
     categoria: "Ramificación",
     enfoque: "Práctico",
     dificultad: "Básico",
@@ -36,6 +40,8 @@ export const GIT_QUESTIONS: Question[] = [
   {
     id: 3,
     palabra: "MERGE",
+    tipo: "codigo-slot",
+    nivel: "Semi-Senior",
     categoria: "Integración de Ramas",
     enfoque: "Práctico",
     dificultad: "Intermedio",
@@ -52,6 +58,8 @@ export const GIT_QUESTIONS: Question[] = [
   {
     id: 4,
     palabra: "CLONE",
+    tipo: "codigo-slot",
+    nivel: "Junior",
     categoria: "Repositorios Remotos",
     enfoque: "Práctico",
     dificultad: "Básico",
@@ -68,6 +76,8 @@ export const GIT_QUESTIONS: Question[] = [
   {
     id: 5,
     palabra: "STASH",
+    tipo: "codigo-slot",
+    nivel: "Semi-Senior",
     categoria: "Gestión de Cambios Temporales",
     enfoque: "Práctico",
     dificultad: "Intermedio",

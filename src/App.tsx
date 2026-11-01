@@ -12,6 +12,7 @@ import { StatsModal } from './components/Modals/StatsModal';
 import { HelpModal } from './components/Modals/HelpModal';
 import { TopicSelectModal } from './components/Modals/TopicSelectModal';
 import { CheatSheetModal } from './components/Modals/CheatSheetModal';
+import { GameModeModal } from './components/Modals/GameModeModal';
 import type { ToastMessage } from './types/game';
 import './App.css';
 
@@ -22,6 +23,7 @@ export function App() {
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [cheatSheetModalOpen, setCheatSheetModalOpen] = useState(false);
   const [topicModalOpen, setTopicModalOpen] = useState(false);
+  const [gameModeModalOpen, setGameModeModalOpen] = useState(false);
 
   const {
     soundEnabled,
@@ -44,6 +46,9 @@ export function App() {
   }, []);
 
   const {
+    gameMode,
+    setGameMode,
+    maxAttempts,
     currentTopic,
     questionIndex,
     currentQuestion,
@@ -67,7 +72,8 @@ export function App() {
     jumpToQuestion,
     toggleHint,
     changeTopic,
-    resetCurrentStats
+    resetCurrentStats,
+    discardLetters
   } = useGameState({
     onPlayKey: playKey,
     onPlayFlip: playFlip,
@@ -85,6 +91,7 @@ export function App() {
       {/* Cabecera Principal */}
       <Header
         currentTopic={currentTopic}
+        gameMode={gameMode}
         soundEnabled={soundEnabled}
         onToggleSound={toggleSound}
         onOpenStats={() => setStatsModalOpen(true)}
@@ -92,6 +99,7 @@ export function App() {
         onOpenHelp={() => setHelpModalOpen(true)}
         onOpenCheatSheet={() => setCheatSheetModalOpen(true)}
         onOpenTopicSelect={() => setTopicModalOpen(true)}
+        onOpenGameMode={() => setGameModeModalOpen(true)}
       />
 
       {/* Contenedor Central */}
@@ -102,9 +110,13 @@ export function App() {
           totalQuestions={currentTopic.preguntas.length}
           wordLength={wordLength}
           showHint={showHint}
+          gameMode={gameMode}
+          guessesCount={guesses.length}
+          maxAttempts={maxAttempts}
           onToggleHint={toggleHint}
           onPrevQuestion={prevQuestion}
           onNextQuestion={nextQuestion}
+          onDiscardLetters={discardLetters}
         />
 
         <WordleBoard
@@ -114,6 +126,7 @@ export function App() {
           currentGuess={currentGuess}
           isShakingRow={isShakingRow}
           isRowEvaluating={isRowEvaluating}
+          maxAttempts={maxAttempts}
         />
 
         <Keyboard
@@ -133,7 +146,7 @@ export function App() {
         onNextQuestion={nextQuestion}
       />
 
-      {/* Modal 2: Catálogo de Desafíos y Mapa de Aprendizaje */}
+      {/* Modal 2: Catálogo de Desafíos por Nivel y Tipo */}
       <CatalogModal
         isOpen={catalogModalOpen}
         onClose={() => setCatalogModalOpen(false)}
@@ -160,7 +173,7 @@ export function App() {
       {/* Modal 4: ¿Cómo se Juega? */}
       <HelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
 
-      {/* Modal 5: Selector de Rutas / Temas (SQL, JS, Git, etc.) */}
+      {/* Modal 5: Selector de Rutas / Temas (SQL) */}
       <TopicSelectModal
         isOpen={topicModalOpen}
         onClose={() => setTopicModalOpen(false)}
@@ -172,6 +185,17 @@ export function App() {
       <CheatSheetModal
         isOpen={cheatSheetModalOpen}
         onClose={() => setCheatSheetModalOpen(false)}
+      />
+
+      {/* Modal 7: Reglas y Selector de Modos de Dificultad */}
+      <GameModeModal
+        isOpen={gameModeModalOpen}
+        onClose={() => setGameModeModalOpen(false)}
+        currentMode={gameMode}
+        onSelectMode={mode => {
+          setGameMode(mode);
+          showToast(`Modo cambiado a: ${mode.toUpperCase()}`, 'info');
+        }}
       />
     </div>
   );

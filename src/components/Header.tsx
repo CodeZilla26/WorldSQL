@@ -1,143 +1,92 @@
 import React from 'react';
-import {
-  Database,
-  Volume2,
-  VolumeX,
-  BarChart3,
-  ListOrdered,
-  HelpCircle,
-  BookOpen,
-  Sliders
-} from 'lucide-react';
-import type { Topic, GameMode } from '../types/game';
-import { GAME_MODES } from '../data/gameModes';
+import { Database, Settings, Flame, Check } from 'lucide-react';
+import { getUserRank } from '../types/game';
+import type { GameTab, UserProgress } from '../types/game';
 
 interface HeaderProps {
-  currentTopic: Topic;
-  gameMode: GameMode;
-  soundEnabled: boolean;
-  onToggleSound: () => void;
-  onOpenStats: () => void;
-  onOpenCatalog: () => void;
-  onOpenHelp: () => void;
-  onOpenCheatSheet: () => void;
-  onOpenTopicSelect: () => void;
-  onOpenGameMode: () => void;
+  currentTab: GameTab;
+  userProgress: UserProgress;
+  dailyCompletedToday: boolean;
+  onSelectTab: (tab: GameTab) => void;
+  onOpenSettings: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  currentTopic,
-  gameMode,
-  soundEnabled,
-  onToggleSound,
-  onOpenStats,
-  onOpenCatalog,
-  onOpenHelp,
-  onOpenCheatSheet,
-  onOpenTopicSelect,
-  onOpenGameMode
+  currentTab,
+  userProgress,
+  dailyCompletedToday,
+  onSelectTab,
+  onOpenSettings
 }) => {
-  const modeInfo = GAME_MODES[gameMode];
+  const currentRank = getUserRank(userProgress.xp);
 
   return (
     <header className="app-header">
+      {/* Lado Izquierdo: Logo y Rango */}
       <div className="header-left">
-        <div className="logo-badge" title="DevWordle">
+        <div className="logo-badge" title="SQL Wordle">
           <Database size={20} className="logo-icon" />
         </div>
         <div className="logo-info">
           <h1 className="logo-title">
-            Dev<span>Wordle</span>
+            SQL<span>Wordle</span>
           </h1>
-          <div className="pills-row">
-            {/* Pill del Tema actual (SQL) */}
-            <button
-              type="button"
-              className="topic-selector-pill"
-              onClick={onOpenTopicSelect}
-              title="Ver tema de estudio actual"
-            >
-              <span className="topic-dot" style={{ backgroundColor: currentTopic.color }} />
-              <span className="topic-name">{currentTopic.nombre}</span>
-            </button>
-
-            {/* Pill del Modo de Dificultad (Fácil / Normal / Difícil) */}
-            <button
-              type="button"
-              className="gamemode-selector-pill"
-              onClick={onOpenGameMode}
-              title="Cambiar reglas o modo de dificultad"
-            >
-              <span className="mode-indicator-dot" style={{ backgroundColor: modeInfo.badgeColor }} />
-              <span>{gameMode === 'facil' ? 'Fácil' : gameMode === 'normal' ? 'Normal' : 'Difícil'}</span>
-            </button>
+          <div className="rank-pill" title={`${userProgress.xp} XP acumulados`}>
+            <span>{currentRank.icon}</span>
+            <span className="rank-name">{currentRank.title}</span>
+            <span className="rank-xp-tiny">{userProgress.xp} XP</span>
           </div>
         </div>
       </div>
 
-      <nav className="header-actions" aria-label="Acciones de la aplicación">
+      {/* Centro: Selector de Pestaña (Práctica Libre vs Desafío Diario) */}
+      <div className="header-center-tabs">
         <button
           type="button"
-          className="icon-action-btn"
-          onClick={onOpenGameMode}
-          title="Ajustar Reglas y Dificultad"
-          aria-label="Reglas y Dificultad"
+          className={`tab-toggle-pill ${currentTab === 'practica' ? 'active' : ''}`}
+          onClick={() => onSelectTab('practica')}
+          title="Modo Práctica: Explora todos los desafíos"
         >
-          <Sliders size={18} />
-        </button>
-
-        {currentTopic.id === 'sql' && (
-          <button
-            type="button"
-            className="icon-action-btn"
-            onClick={onOpenCheatSheet}
-            title="Manual Rápido SQL (Cheat Sheet)"
-            aria-label="Guía Rápida SQL"
-          >
-            <BookOpen size={18} />
-          </button>
-        )}
-
-        <button
-          type="button"
-          className="icon-action-btn"
-          onClick={onOpenCatalog}
-          title="Catálogo de Desafíos por Nivel y Tipo"
-          aria-label="Catálogo de Desafíos"
-        >
-          <ListOrdered size={18} />
+          <span>Práctica</span>
         </button>
 
         <button
           type="button"
-          className="icon-action-btn"
-          onClick={onOpenStats}
-          title="Tus Estadísticas"
-          aria-label="Tus Estadísticas"
+          className={`tab-toggle-pill ${currentTab === 'diario' ? 'active' : ''}`}
+          onClick={() => onSelectTab('diario')}
+          title="Desafío Diario: Mantén viva tu racha"
         >
-          <BarChart3 size={18} />
+          <Flame size={14} className={dailyCompletedToday ? 'text-amber' : 'text-rose'} />
+          <span>Diario</span>
+          {dailyCompletedToday ? (
+            <span className="daily-done-dot" title="Completado hoy">
+              <Check size={10} />
+            </span>
+          ) : (
+            <span className="daily-pending-dot" title="Pendiente hoy" />
+          )}
         </button>
+      </div>
 
+      {/* Lado Derecho: Racha y Botón Único de Ajustes */}
+      <div className="header-actions">
+        {/* Contador de Racha */}
+        <div className="streak-pill" title={`Racha diaria: ${userProgress.dailyStreak} días consecutivos`}>
+          <Flame size={16} className="streak-flame-icon" />
+          <span className="streak-count">{userProgress.dailyStreak}</span>
+        </div>
+
+        {/* Botón de Menú y Ajustes */}
         <button
           type="button"
-          className="icon-action-btn"
-          onClick={onToggleSound}
-          title={soundEnabled ? 'Silenciar Efectos de Sonido' : 'Activar Sonido'}
-          aria-label="Control de sonido"
+          className="icon-action-btn settings-main-btn"
+          onClick={onOpenSettings}
+          title="Ajustes, Modos y Menú"
+          aria-label="Ajustes y Menú"
         >
-          {soundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} className="text-muted" />}
+          <Settings size={19} />
         </button>
-
-        <button
-          type="button"
-          className="icon-action-btn"
-          onClick={onOpenHelp}
-          title="¿Cómo se Juega?"
-          aria-label="Instrucciones"
-        >
-          <HelpCircle size={18} />
-        </button>
-      </nav>
+      </div>
     </header>
   );
 };

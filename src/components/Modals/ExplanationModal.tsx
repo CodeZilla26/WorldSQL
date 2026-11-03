@@ -2,19 +2,16 @@ import React, { useState } from 'react';
 import {
   GraduationCap,
   X,
-  BookOpen,
-  Code2,
-  Server,
   Lightbulb,
+  AlertTriangle,
+  Briefcase,
+  Code2,
   ArrowRight,
   CheckCircle2,
   AlertCircle,
   Copy,
   Check,
-  Bug,
-  Briefcase,
-  Layers,
-  Terminal
+  Sparkles
 } from 'lucide-react';
 import type { Question, GameStatus } from '../../types/game';
 
@@ -23,6 +20,7 @@ interface ExplanationModalProps {
   onClose: () => void;
   question: Question;
   gameStatus: GameStatus;
+  earnedXp: number;
   onNextQuestion: () => void;
 }
 
@@ -31,6 +29,7 @@ export const ExplanationModal: React.FC<ExplanationModalProps> = ({
   onClose,
   question,
   gameStatus,
+  earnedXp,
   onNextQuestion
 }) => {
   const [copied, setCopied] = useState(false);
@@ -47,14 +46,10 @@ export const ExplanationModal: React.FC<ExplanationModalProps> = ({
     }
   };
 
-  const TipoIcon =
-    question.tipo === 'debugging'
-      ? Bug
-      : question.tipo === 'entrevista'
-      ? Briefcase
-      : question.tipo === 'concepto'
-      ? Layers
-      : Terminal;
+  // Micro-Tips concisos y de alto impacto
+  const tipClave = question.explicacion.tipClave || question.explicacion.concepto;
+  const errorProduccion = question.explicacion.errorProduccion || question.explicacion.reglaOro;
+  const relevancia = question.explicacion.relevanciaEntrevista || question.explicacion.ejemploReal;
 
   return (
     <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
@@ -63,15 +58,8 @@ export const ExplanationModal: React.FC<ExplanationModalProps> = ({
           <div className="modal-title-group">
             <GraduationCap size={22} className="text-emerald" />
             <div>
-              <h3>Explicación Teórica & Práctica</h3>
-              <div className="modal-meta-pills">
-                <span className="badge badge-level-modal">{question.nivel}</span>
-                <span className="badge badge-tipo-modal">
-                  <TipoIcon size={12} />
-                  {question.tipo.toUpperCase()}
-                </span>
-                <span className="modal-category-sub">{question.categoria}</span>
-              </div>
+              <h3>Micro-Tips de Aprendizaje</h3>
+              <p className="modal-subtitle">Lección rápida para recordar este concepto</p>
             </div>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Cerrar modal">
@@ -80,35 +68,60 @@ export const ExplanationModal: React.FC<ExplanationModalProps> = ({
         </div>
 
         <div className="modal-content">
-          {/* Banner de resultado */}
+          {/* Banner de resultado y XP ganado */}
           <div className={`status-banner ${isWon ? 'banner-won' : 'banner-lost'}`}>
             <div className="status-banner-icon">
               {isWon ? <CheckCircle2 size={28} /> : <AlertCircle size={28} />}
             </div>
             <div className="status-banner-info">
-              <h4>{isWon ? '¡Concepto Dominado con Éxito!' : 'Fin de Intentos de la Ronda'}</h4>
+              <div className="status-banner-header">
+                <h4>{isWon ? '¡Concepto Dominado!' : 'Fin de Intentos'}</h4>
+                {isWon && earnedXp > 0 && (
+                  <span className="xp-earned-pill">
+                    <Sparkles size={12} /> +{earnedXp} XP
+                  </span>
+                )}
+              </div>
               <p>
                 Palabra clave: <strong className="target-word-pill">{question.palabra}</strong>
               </p>
             </div>
           </div>
 
-          {/* 1. Concepto Fundamental */}
-          <div className="pedagogy-card">
-            <div className="pedagogy-header">
-              <BookOpen size={16} className="text-cyan" />
-              <h5>Concepto Fundamental</h5>
+          {/* 1. Micro-Tip Clave */}
+          <div className="microtip-card tip-card-key">
+            <div className="microtip-header">
+              <Lightbulb size={16} className="text-amber" />
+              <h5>💡 El Tip Clave</h5>
             </div>
-            <p className="pedagogy-text">{question.explicacion.concepto}</p>
+            <p className="microtip-body">{tipClave}</p>
           </div>
 
-          {/* 2. Sintaxis Estándar */}
+          {/* 2. Peligro en Producción / Error Común */}
+          <div className="microtip-card tip-card-danger">
+            <div className="microtip-header">
+              <AlertTriangle size={16} className="text-rose" />
+              <h5>⚠️ El Peligro en Producción</h5>
+            </div>
+            <p className="microtip-body">{errorProduccion}</p>
+          </div>
+
+          {/* 3. Relevancia Práctica o Entrevista */}
+          <div className="microtip-card tip-card-interview">
+            <div className="microtip-header">
+              <Briefcase size={16} className="text-purple" />
+              <h5>💼 En el Mundo Real & Entrevistas</h5>
+            </div>
+            <p className="microtip-body">{relevancia}</p>
+          </div>
+
+          {/* Sintaxis Estándar */}
           {question.explicacion.sintaxis && (
-            <div className="pedagogy-card">
+            <div className="pedagogy-card" style={{ marginTop: '4px' }}>
               <div className="pedagogy-header">
                 <div className="flex-center gap-6">
-                  <Code2 size={16} className="text-amber" />
-                  <h5>Sintaxis Estándar</h5>
+                  <Code2 size={16} className="text-cyan" />
+                  <h5>Sintaxis Rápida</h5>
                 </div>
                 <button
                   type="button"
@@ -125,29 +138,11 @@ export const ExplanationModal: React.FC<ExplanationModalProps> = ({
               </pre>
             </div>
           )}
-
-          {/* 3. En el Mundo Real */}
-          <div className="pedagogy-card">
-            <div className="pedagogy-header">
-              <Server size={16} className="text-indigo" />
-              <h5>En el Mundo Real & Frameworks (ORM / Backend)</h5>
-            </div>
-            <p className="pedagogy-text">{question.explicacion.ejemploReal}</p>
-          </div>
-
-          {/* 4. Regla de Oro */}
-          <div className="golden-rule-container">
-            <Lightbulb size={20} className="golden-rule-icon" />
-            <div>
-              <strong className="golden-rule-title">💡 Regla de Oro de la Industria:</strong>
-              <p className="golden-rule-text">{question.explicacion.reglaOro}</p>
-            </div>
-          </div>
         </div>
 
         <div className="modal-footer">
           <button type="button" className="btn-secondary" onClick={onClose}>
-            Repasar Tablero
+            Ver Tablero
           </button>
           <button type="button" className="btn-primary" onClick={onNextQuestion}>
             <span>Siguiente Desafío</span>

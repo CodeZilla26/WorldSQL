@@ -1,61 +1,77 @@
-# 🗄️ DevWordle SQL: Entrenador Interactivo de Bases de Datos
+# 🗄️ SQL Wordle: Entrenador Interactivo de Bases de Datos
 
-Una aplicación web moderna desarrollada con **React 19 + TypeScript + Vite**, inspirada en la mecánica visual de Wordle pero diseñada como una **herramienta de aprendizaje y preparación para entrevistas técnicas de SQL y bases de datos relacionales**.
+Una aplicación web moderna y mobile-first desarrollada con **React 19 + TypeScript + Vite**, inspirada en la mecánica visual de Wordle y diseñada como una **herramienta de aprendizaje diario y preparación para entrevistas técnicas de SQL y bases de datos relacionales**.
 
-> **Enfoque Pedagógico:** No se adivina a ciegas. El juego reta al estudiante mediante desafíos conceptuales, consultas prácticas, análisis de errores de producción (debugging) y escenarios de entrevistas laborales.
+> **Enfoque Pedagógico:** No se adivina a ciegas. El juego reta al estudiante mediante desafíos conceptuales, consultas prácticas, análisis de errores de producción (debugging) y escenarios de entrevistas laborales, reforzando cada acierto con **Micro-Tips de aprendizaje**.
 
 ---
 
-## 🎯 1. Modalidades Diversificadas de Pregunta
+## 📱 1. Experiencia Mobile-First y Cabecera Limpia
+
+Diseñado pensando en su futura publicación en Android / Play Store:
+
+* **Cabecera Minimalista:** Muestra el rango actual del estudiante (`🌱 Novato SQL • 120 XP`), el selector de pestaña (`Práctica` vs `🔥 Diario`), el contador de racha (`🔥 5`) y un único botón de **Menú / Ajustes (`⚙️`)**.
+* **Menú Unificado (`SettingsModal`):** Centraliza el acceso al Catálogo de Preguntas, Estadísticas, Selector de Dificultad, Sonido y Vibración Háptica.
+* **Vibración Háptica Táctil:** Respuestas táctiles sutiles al pulsar teclas, vibración de victoria armónica al resolver, y doble pulsación de advertencia en errores.
+
+---
+
+## 🎯 2. Modalidades Diversificadas de Pregunta (35 Desafíos)
 
 En lugar de limitarse a llenar huecos de código, los desafíos se clasifican en **4 formatos didácticos**:
 
 1. **💻 Consultas SQL Prácticas (`codigo-slot`):** Deducir la cláusula faltante en el hueco `[ ??? ]` de un script SQL real (`SELECT`, `WHERE`, `INNER`, `LIMIT`, etc.).
-2. **📚 Conceptos Puros & Arquitectura (`concepto`):** Preguntas teóricas sobre arquitectura de bases de datos, propiedades ACID, esquemas y modelos relacionales acompañadas de analogías del mundo real (`ATOMIC`, `SCHEMA`, `TABLE`, `CASCADE`).
+2. **📚 Conceptos Puros & Arquitectura (`concepto`):** Preguntas teóricas sobre arquitectura de bases de datos, propiedades ACID, esquemas y modelos relacionales acompañadas de analogías del mundo real (`ATOMIC`, `SCHEMA`, `TABLE`, `CASCADE`, `NULL`).
 3. **🐛 Modo Debugging (`debugging`):** Fragmentos con errores de sintaxis, consultas que descartan datos por un JOIN incorrecto o comandos peligrosos sin condición, retando al usuario a escribir la palabra clave que lo soluciona (`HAVING`, `LEFT`, `UPDATE`, `ROLLBACK`).
 4. **💼 Preguntas de Entrevista Técnica (`entrevista`):** Situaciones reales planteadas en entrevistas de empresas de software (diferencias entre `DELETE` y `TRUNCATE`, optimización con `INDEX`, diagnósticos con `EXPLAIN`, o consultas con `DISTINCT` y `UNION`).
 
 ---
 
-## 🏆 2. Sistema de Niveles de Carrera
+## 💡 3. Micro-Tips de Aprendizaje Post-Ronda
 
-Los desafíos están organizados en 3 rangos progresivos:
+En lugar de textos densos, al terminar cada ronda se despliega una tarjeta concisa con **3 píldoras pedagógicas de alto impacto**:
 
-* 🌱 **Junior (Nivel 1):** Fundamentos de tablas, sintaxis esencial, operaciones CRUD (`SELECT`, `FROM`, `WHERE`, `INSERT`, `VALUES`, `UPDATE`, `DELETE`, `COUNT`, `ORDER`, `LIMIT`, `LIKE`, `NULL`, `DEFAULT`).
-* ⚡ **Semi-Senior / Mid (Nivel 2):** Relaciones entre tablas, tipos de uniones (`INNER` vs `LEFT JOIN`), agrupaciones (`GROUP BY`, `HAVING`), restricciones de integridad (`PRIMARY KEY`, `FOREIGN KEY`, `CHECK`), operaciones de conjuntos (`UNION`) y acciones referenciales (`CASCADE`).
-* 🔥 **Senior & DBA (Nivel 3):** Principios ACID (`ATOMIC`), transacciones irrevocables (`COMMIT`, `ROLLBACK`), rendimiento y optimización con árboles B-Tree (`INDEX`), diagnóstico de planes de ejecución (`EXPLAIN`), vaciado masivo eficiente (`TRUNCATE`) y comandos destructivos (`DROP`).
-
----
-
-## ⚙️ 3. Reglas y Modos de Dificultad Configurables
-
-El usuario puede personalizar la exigencia del juego desde el botón de ajustes en la cabecera:
-
-* 🟢 **Modo Fácil (Principiante):**
-  - **6 intentos** disponibles.
-  - Pista didáctica del concepto visible automáticamente.
-  - **Botón de Asistencia:** Permite descartar 3 letras incorrectas del teclado con un clic.
-  - Ideal para estudiantes que dan sus primeros pasos en SQL.
-
-* 🔵 **Modo Normal (Estándar):**
-  - **5 intentos** con reglas tradicionales de Wordle.
-  - Pistas bajo demanda cuando las necesites.
-  - El balance ideal entre desafío mental y aprendizaje.
-
-* 🔴 **Modo Difícil (Entrevista Técnica / Hard Mode):**
-  - **4 intentos** exactos.
-  - **Regla Estricta:** Toda letra verde (correcta) DEBE mantenerse en la misma posición en los siguientes intentos, y toda letra amarilla DEBE incluirse en los próximos intentos.
-  - Pistas bloqueadas hasta el último intento de emergencia.
-  - Simula la presión y precisión de una prueba técnica en vivo.
+* 💡 **El Tip Clave:** Píldora directa y memorable para retener la lección en 10 segundos.
+* ⚠️ **El Peligro en Producción:** El error grave o caída de servidor que este concepto previene.
+* 💼 **En el Mundo Real & Entrevistas:** Por qué los reclutadores y líderes técnicos preguntan este concepto.
+* 📋 **Sintaxis Rápida:** Bloque de código con botón para copiar al portapapeles.
 
 ---
 
-## 📚 4. Recursos Didácticos Integrados
+## 🏆 4. Sistema de Niveles y Rangos de Experiencia (XP)
 
-* **Explicación Profunda Post-Ronda:** Concepto fundamental, sintaxis estándar copiable al portapapeles, casos reales con ORMs modernos (Django / Node.js) y la **Regla de Oro** para evitar caídas en producción.
-* **Manual Rápido Interactivo (Cheat Sheet):** Pestañas con el orden de ejecución real del motor de BD (FROM ➔ WHERE ➔ GROUP BY ➔ HAVING ➔ SELECT ➔ ORDER BY ➔ LIMIT), sublenguajes (DDL, DML, DQL, TCL), comparativa gráfica de JOINs y decálogo de buenas prácticas.
-* **Mapa de Aprendizaje y Catálogo:** Filtros combinados por Nivel (Junior, Semi-Senior, Senior), por Formato (Consultas, Conceptos, Debugging, Entrevista) y buscador dinámico.
-* **Sintetizador Web Audio:** Efectos de sonido mecánicos y armónicos generados en tiempo real sin requerir archivos MP3 externos.
+* **Puntos de Experiencia (XP):**
+  - Acertar al 1er intento: `+100 XP`
+  - Acertar al 2do intento: `+80 XP`
+  - Acertar al 3er intento: `+60 XP`
+  - Acertar al 4to intento: `+40 XP`
+  - Acertar al 5to o 6to intento: `+25 XP`
+  - Bonus en Desafío Diario: `+40 XP`
+
+* **Rangos de Estudiante de SQL:**
+  - 🌱 **Nivel 1:** *Novato SQL* (0 - 200 XP)
+  - 🔍 **Nivel 2:** *Consultor Junior* (200 - 500 XP)
+  - ⚡ **Nivel 3:** *Filtrador Hábil* (500 - 900 XP)
+  - 🏛️ **Nivel 4:** *Modelador de Tablas* (900 - 1500 XP)
+  - 💎 **Nivel 5:** *Dominador de SQL* (1500+ XP)
+
+---
+
+## 🔥 5. El Desafío Diario (Daily SQL Challenge)
+
+* Una palabra clave fija por fecha (`YYYY-MM-DD`) compartida por todos los jugadores.
+* Resolver el reto del día incrementa y mantiene viva tu **Racha Diaria (🔥)**.
+* Si omites un día, la racha se reinicia.
+
+---
+
+## ⚙️ 6. Modos de Dificultad (Active Recall)
+
+Configurables en cualquier momento desde el menú de ajustes:
+
+* 🟢 **Modo Fácil:** 6 intentos disponibles y pistas siempre abiertas.
+* 🔵 **Modo Normal:** 5 intentos clásicos. La pista requiere al menos 1 intento fallido para incentivar que el estudiante piense antes de pedir ayuda.
+* 🔴 **Modo Difícil (Hard Mode):** 4 intentos y **regla estricta de Wordle** (toda letra verde o amarilla descubierta debe reutilizarse obligatoriamente en el siguiente intento). Pistas bloqueadas hasta el último intento.
 
 ---
 
@@ -72,11 +88,5 @@ npm install
 npm run dev
 ```
 
-Abre en tu navegador la URL indicada en la terminal:
+Abre en tu navegador o dispositivo móvil en la misma red:
 👉 **`http://localhost:5173`**
-
-### Compilar para Producción
-```bash
-npm run build
-npm run preview
-```

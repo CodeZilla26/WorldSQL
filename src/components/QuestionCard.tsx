@@ -9,10 +9,10 @@ import {
   Bug,
   Briefcase,
   Layers,
-  Wand2,
-  Lock
+  Lock,
+  Calendar
 } from 'lucide-react';
-import type { Question, GameMode } from '../types/game';
+import type { Question, GameMode, GameTab } from '../types/game';
 
 interface QuestionCardProps {
   question: Question;
@@ -21,12 +21,13 @@ interface QuestionCardProps {
   wordLength: number;
   showHint: boolean;
   gameMode: GameMode;
+  currentTab: GameTab;
+  todayDateStr: string;
   guessesCount: number;
   maxAttempts: number;
   onToggleHint: () => void;
   onPrevQuestion: () => void;
   onNextQuestion: () => void;
-  onDiscardLetters?: () => void;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -36,12 +37,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   wordLength,
   showHint,
   gameMode,
+  currentTab,
+  todayDateStr,
   guessesCount,
   maxAttempts,
   onToggleHint,
   onPrevQuestion,
-  onNextQuestion,
-  onDiscardLetters
+  onNextQuestion
 }) => {
   // Resalta el slot '___' dentro del código SQL si aplica
   const formattedCode = question.codigoSql
@@ -91,7 +93,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         };
       default:
         return {
-          label: 'Código Práctico',
+          label: 'Consulta SQL',
           icon: Terminal,
           badgeClass: 'badge-tipo-codigo',
           headerTitle: 'Consulta SQL a Completar'
@@ -100,10 +102,30 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   })();
 
   const TipoIcon = tipoInfo.icon;
-  const isHintLocked = gameMode === 'dificil' && guessesCount < maxAttempts - 1;
+
+  // Regla de desbloqueo de pistas para fomentar el Active Recall:
+  // - Modo Fácil: Siempre disponible.
+  // - Modo Normal: Se desbloquea tras el 1er intento (para obligar a pensar primero).
+  // - Modo Difícil: Se desbloquea solo en el último intento de emergencia.
+  const isHintLocked =
+    (gameMode === 'dificil' && guessesCount < maxAttempts - 1) ||
+    (gameMode === 'normal' && guessesCount === 0);
+
+  const hintLockMessage =
+    gameMode === 'dificil'
+      ? 'Bloqueada hasta el último intento en Modo Difícil'
+      : 'Haz al menos 1 intento antes de pedir la pista';
 
   return (
     <section className="question-card" aria-label="Desafío didáctico">
+      {/* Banner superior especial si estamos en Modo Desafío Diario */}
+      {currentTab === 'diario' && (
+        <div className="daily-challenge-badge-banner">
+          <Calendar size={14} className="text-amber" />
+          <span>Palabra del Día: <strong>{todayDateStr}</strong> • ¡Resuélvela para mantener tu racha!</span>
+        </div>
+      )}
+
       {/* Barra superior de metadatos */}
       <div className="question-meta-bar">
         <div className="meta-badges">
@@ -118,29 +140,34 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
           </span>
         </div>
 
-        <div className="nav-controls">
-          <button
-            type="button"
-            className="nav-arrow-btn"
-            onClick={onPrevQuestion}
-            title="Pregunta anterior"
-            aria-label="Pregunta anterior"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          <span className="counter-text">
-            {currentIndex + 1} / {totalQuestions}
-          </span>
-          <button
-            type="button"
-            className="nav-arrow-btn"
-            onClick={onNextQuestion}
-            title="Pregunta siguiente"
-            aria-label="Pregunta siguiente"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
+        {/* Controles de navegación (solo activos en modo práctica libre) */}
+        {currentTab === 'practica' ? (
+          <div className="nav-controls">
+            <button
+              type="button"
+              className="nav-arrow-btn"
+              onClick={onPrevQuestion}
+              title="Pregunta anterior"
+              aria-label="Pregunta anterior"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="counter-text">
+              {currentIndex + 1} / {totalQuestions}
+            </span>
+            <button
+              type="button"
+              className="nav-arrow-btn"
+              onClick={onNextQuestion}
+              title="Pregunta siguiente"
+              aria-label="Pregunta siguiente"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        ) : (
+          <span className="daily-label-chip">Desafío Diario</span>
+        )}
       </div>
 
       {/* Pregunta Central */}
@@ -194,38 +221,22 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
       )}
 
-      {/* Pie de tarjeta con ayudas interactivas */}
+      {/* Pie de tarjeta */}
       <div className="question-footer">
         <div className="word-spec">
           <Sparkles size={14} className="text-cyan" />
           <span>Palabra clave de <strong>{wordLength}</strong> letras</span>
         </div>
 
-        <div className="footer-action-buttons">
-          {/* Botón de ayuda para Modo Fácil */}
-          {gameMode === 'facil' && onDiscardLetters && (
-            <button
-              type="button"
-              className="btn-assist-toggle"
-              onClick={onDiscardLetters}
-              title="Descarta 3 letras que no pertenecen a la palabra clave"
-            >
-              <Wand2 size={14} />
-              <span>Descartar 3 Letras</span>
-            </button>
-          )}
-
-          {/* Botón de Pistas */}
-          <button
-            type="button"
-            className={`btn-hint-toggle ${showHint ? 'active' : ''} ${isHintLocked ? 'hint-locked' : ''}`}
-            onClick={onToggleHint}
-            title={isHintLocked ? 'Bloqueada hasta el último intento en Modo Difícil' : 'Ver Pista'}
-          >
-            {isHintLocked ? <Lock size={14} /> : <Lightbulb size={15} />}
-            <span>{isHintLocked ? 'Pista Bloqueada' : showHint ? 'Ocultar Pista' : 'Ver Pista'}</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          className={`btn-hint-toggle ${showHint ? 'active' : ''} ${isHintLocked ? 'hint-locked' : ''}`}
+          onClick={onToggleHint}
+          title={isHintLocked ? hintLockMessage : 'Ver Pista'}
+        >
+          {isHintLocked ? <Lock size={14} /> : <Lightbulb size={15} />}
+          <span>{isHintLocked ? 'Pista Bloqueada' : showHint ? 'Ocultar Pista' : 'Ver Pista'}</span>
+        </button>
       </div>
 
       {/* Banner de Pista */}

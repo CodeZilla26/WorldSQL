@@ -10,20 +10,18 @@ import { ExplanationModal } from './components/Modals/ExplanationModal';
 import { CatalogModal } from './components/Modals/CatalogModal';
 import { StatsModal } from './components/Modals/StatsModal';
 import { HelpModal } from './components/Modals/HelpModal';
-import { TopicSelectModal } from './components/Modals/TopicSelectModal';
-import { CheatSheetModal } from './components/Modals/CheatSheetModal';
 import { GameModeModal } from './components/Modals/GameModeModal';
+import { SettingsModal } from './components/Modals/SettingsModal';
 import type { ToastMessage } from './types/game';
 import './App.css';
 
 export function App() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [statsModalOpen, setStatsModalOpen] = useState(false);
-  const [catalogModalOpen, setCatalogModalOpen] = useState(false);
-  const [helpModalOpen, setHelpModalOpen] = useState(false);
-  const [cheatSheetModalOpen, setCheatSheetModalOpen] = useState(false);
-  const [topicModalOpen, setTopicModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [gameModeModalOpen, setGameModeModalOpen] = useState(false);
+  const [catalogModalOpen, setCatalogModalOpen] = useState(false);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
 
   const {
     soundEnabled,
@@ -46,8 +44,15 @@ export function App() {
   }, []);
 
   const {
+    currentTab,
+    setCurrentTab,
+    todayDateStr,
+    dailyCompletedToday,
+    userProgress,
     gameMode,
     setGameMode,
+    hapticsEnabled,
+    toggleHaptics,
     maxAttempts,
     currentTopic,
     questionIndex,
@@ -62,6 +67,7 @@ export function App() {
     isShakingRow,
     explanationModalOpen,
     setExplanationModalOpen,
+    earnedXp,
     keyboardStatuses,
     currentStats,
     addLetter,
@@ -71,9 +77,7 @@ export function App() {
     prevQuestion,
     jumpToQuestion,
     toggleHint,
-    changeTopic,
-    resetCurrentStats,
-    discardLetters
+    resetCurrentStats
   } = useGameState({
     onPlayKey: playKey,
     onPlayFlip: playFlip,
@@ -88,18 +92,13 @@ export function App() {
       {/* Sistema de Toasts */}
       <Toast toasts={toasts} />
 
-      {/* Cabecera Principal */}
+      {/* Cabecera Limpia Mobile-First (Rango, Pestañas Práctica/Diario, Racha y Menú) */}
       <Header
-        currentTopic={currentTopic}
-        gameMode={gameMode}
-        soundEnabled={soundEnabled}
-        onToggleSound={toggleSound}
-        onOpenStats={() => setStatsModalOpen(true)}
-        onOpenCatalog={() => setCatalogModalOpen(true)}
-        onOpenHelp={() => setHelpModalOpen(true)}
-        onOpenCheatSheet={() => setCheatSheetModalOpen(true)}
-        onOpenTopicSelect={() => setTopicModalOpen(true)}
-        onOpenGameMode={() => setGameModeModalOpen(true)}
+        currentTab={currentTab}
+        userProgress={userProgress}
+        dailyCompletedToday={dailyCompletedToday}
+        onSelectTab={setCurrentTab}
+        onOpenSettings={() => setSettingsModalOpen(true)}
       />
 
       {/* Contenedor Central */}
@@ -111,12 +110,13 @@ export function App() {
           wordLength={wordLength}
           showHint={showHint}
           gameMode={gameMode}
+          currentTab={currentTab}
+          todayDateStr={todayDateStr}
           guessesCount={guesses.length}
           maxAttempts={maxAttempts}
           onToggleHint={toggleHint}
           onPrevQuestion={prevQuestion}
           onNextQuestion={nextQuestion}
-          onDiscardLetters={discardLetters}
         />
 
         <WordleBoard
@@ -137,16 +137,44 @@ export function App() {
         />
       </main>
 
-      {/* Modal 1: Explicación Didáctica Post-Ronda */}
+      {/* Modal 1: Micro-Tips de Aprendizaje Post-Ronda */}
       <ExplanationModal
         isOpen={explanationModalOpen}
         onClose={() => setExplanationModalOpen(false)}
         question={currentQuestion}
         gameStatus={gameStatus}
+        earnedXp={earnedXp}
         onNextQuestion={nextQuestion}
       />
 
-      {/* Modal 2: Catálogo de Desafíos por Nivel y Tipo */}
+      {/* Modal 2: Menú y Ajustes Unificado (Sonido, Háptica, Modos, etc.) */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        gameMode={gameMode}
+        userProgress={userProgress}
+        soundEnabled={soundEnabled}
+        hapticsEnabled={hapticsEnabled}
+        onToggleSound={toggleSound}
+        onToggleHaptics={toggleHaptics}
+        onOpenGameMode={() => setGameModeModalOpen(true)}
+        onOpenCatalog={() => setCatalogModalOpen(true)}
+        onOpenStats={() => setStatsModalOpen(true)}
+        onOpenHelp={() => setHelpModalOpen(true)}
+      />
+
+      {/* Modal 3: Selector de Modos y Reglas de Dificultad */}
+      <GameModeModal
+        isOpen={gameModeModalOpen}
+        onClose={() => setGameModeModalOpen(false)}
+        currentMode={gameMode}
+        onSelectMode={mode => {
+          setGameMode(mode);
+          showToast(`Modo cambiado a: ${mode.toUpperCase()}`, 'info');
+        }}
+      />
+
+      {/* Modal 4: Catálogo de Desafíos por Nivel y Tipo */}
       <CatalogModal
         isOpen={catalogModalOpen}
         onClose={() => setCatalogModalOpen(false)}
@@ -160,7 +188,7 @@ export function App() {
         }}
       />
 
-      {/* Modal 3: Estadísticas del Estudiante */}
+      {/* Modal 5: Estadísticas del Estudiante */}
       <StatsModal
         isOpen={statsModalOpen}
         onClose={() => setStatsModalOpen(false)}
@@ -170,33 +198,8 @@ export function App() {
         onResetStats={resetCurrentStats}
       />
 
-      {/* Modal 4: ¿Cómo se Juega? */}
+      {/* Modal 6: ¿Cómo se Juega? */}
       <HelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
-
-      {/* Modal 5: Selector de Rutas / Temas (SQL) */}
-      <TopicSelectModal
-        isOpen={topicModalOpen}
-        onClose={() => setTopicModalOpen(false)}
-        currentTopicId={currentTopic.id}
-        onSelectTopic={changeTopic}
-      />
-
-      {/* Modal 6: Guía Rápida de SQL (Cheat Sheet) */}
-      <CheatSheetModal
-        isOpen={cheatSheetModalOpen}
-        onClose={() => setCheatSheetModalOpen(false)}
-      />
-
-      {/* Modal 7: Reglas y Selector de Modos de Dificultad */}
-      <GameModeModal
-        isOpen={gameModeModalOpen}
-        onClose={() => setGameModeModalOpen(false)}
-        currentMode={gameMode}
-        onSelectMode={mode => {
-          setGameMode(mode);
-          showToast(`Modo cambiado a: ${mode.toUpperCase()}`, 'info');
-        }}
-      />
     </div>
   );
 }

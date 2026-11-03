@@ -2,8 +2,19 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { TOPICS, DEFAULT_TOPIC_ID } from '../data/topics';
 import { evaluateGuess, computeKeyboardStatuses, validateHardMode } from '../utils/wordEvaluator';
+import { getTodayDateString, getDailyQuestionIndex, computeDailyStreak } from '../utils/dailyChallenge';
+import { haptics } from '../utils/haptics';
 import { useLocalStorage } from './useLocalStorage';
-import type { GameStatus, TileEvaluation, TopicStats, Question, TileStatus, GameMode } from '../types/game';
+import type {
+  GameStatus,
+  TileEvaluation,
+  TopicStats,
+  Question,
+  TileStatus,
+  GameMode,
+  GameTab,
+  UserProgress
+} from '../types/game';
 
 const INITIAL_STATS: TopicStats = {
   played: 0,
@@ -14,7 +25,11 @@ const INITIAL_STATS: TopicStats = {
   solvedIds: []
 };
 
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const INITIAL_PROGRESS: UserProgress = {
+  xp: 0,
+  dailyStreak: 0,
+  lastDailyDate: null
+};
 
 interface UseGameStateProps {
   onPlayKey: () => void;
@@ -33,8 +48,24 @@ export function useGameState({
   onPlayGameOver,
   onShowToast
 }: UseGameStateProps) {
+  // Pestaña activa: Modo Práctica o Desafío Diario
+  const [currentTab, setCurrentTab] = useState<GameTab>('practica');
+
   // Modo de dificultad del juego
   const [gameMode, setGameMode] = useLocalStorage<GameMode>('dev_wordle_game_mode_v1', 'normal');
+
+  // Vibración háptica móvil
+  const [hapticsEnabled, setHapticsEnabled] = useLocalStorage<boolean>('dev_wordle_haptics_v1', true);
+
+  // Progreso de XP y Racha diaria
+  const [userProgress, setUserProgress] = useLocalStorage<UserProgress>(
+    'dev_wordle_user_progress_v2',
+    INITIAL_PROGRESS
+  );
+
+  // Fecha actual
+  const todayDateStr = useMemo(() => getTodayDateString(), []);
+  const dailyCompletedToday = userProgress.lastDailyDate === todayDateStr;
 
   // Máximo de intentos según el modo
   const maxAttempts = useMemo(() => {
@@ -54,27 +85,33 @@ export function useGameState({
     return TOPICS.find(t => t.id === topicId) || TOPICS[0];
   }, [topicId]);
 
-  const [questionIndex, setQuestionIndex] = useLocalStorage<number>(
+  const [practiceQuestionIndex, setPracticeQuestionIndex] = useLocalStorage<number>(
     `dev_wordle_${topicId}_current_idx_v1`,
     0
   );
 
-  // Asegurar que el índice esté dentro del rango del tema actual
-  const safeQuestionIndex = Math.min(Math.max(0, questionIndex), currentTopic.preguntas.length - 1);
-  const currentQuestion: Question = currentTopic.preguntas[safeQuestionIndex] || currentTopic.preguntas[0];
+  // Índice efectivo de la pregunta según el modo (Práctica o Diario)
+  const questionIndex = useMemo(() => {
+    if (currentTab === 'diario') {
+      return getDailyQuestionIndex(currentTopic.preguntas.length, todayDateStr);
+    }
+    return Math.min(Math.max(0, practiceQuestionIndex), currentTopic.preguntas.length - 1);
+  }, [currentTab, currentTopic.preguntas.length, todayDateStr, practiceQuestionIndex]);
+
+  const currentQuestion: Question = currentTopic.preguntas[questionIndex] || currentTopic.preguntas[0];
   const targetWord = currentQuestion.palabra.toUpperCase();
   const wordLength = targetWord.length;
 
-  // Estado del juego en la ronda actual
+  // Estado de la partida actual
   const [currentGuess, setCurrentGuess] = useState<string>('');
   const [guesses, setGuesses] = useState<string[]>([]);
   const [evaluations, setEvaluations] = useState<TileEvaluation[][]>([]);
   const [isRowEvaluating, setIsRowEvaluating] = useState<boolean>(false);
   const [gameStatus, setGameStatus] = useState<GameStatus>('IN_PROGRESS');
-  const [showHint, setShowHint] = useState<boolean>(gameMode === 'facil');
+  const [showHint, setShowHint] = useState<boolean>(false);
   const [isShakingRow, setIsShakingRow] = useState<boolean>(false);
   const [explanationModalOpen, setExplanationModalOpen] = useState<boolean>(false);
-  const [discardedLetters, setDiscardedLetters] = useState<string[]>([]);
+  const [earnedXp, setEarnedXp] = useState<number>(0);
 
   // Estadísticas persistentes por tema
   const [statsMap, setStatsMap] = useLocalStorage<Record<string, TopicStats>>(
@@ -84,52 +121,27 @@ export function useGameState({
 
   const currentStats = statsMap[topicId] || INITIAL_STATS;
 
-  // Resetear el tablero cuando cambia la pregunta, tema o modo
+  // Resetear el tablero cuando cambia la pregunta, el tab o el modo
   useEffect(() => {
     setCurrentGuess('');
     setGuesses([]);
     setEvaluations([]);
     setIsRowEvaluating(false);
     setGameStatus('IN_PROGRESS');
-    setShowHint(gameMode === 'facil');
+    setShowHint(false);
     setIsShakingRow(false);
-    setDiscardedLetters([]);
-  }, [safeQuestionIndex, topicId, gameMode]);
+    setEarnedXp(0);
+  }, [questionIndex, currentTab, topicId, gameMode]);
 
-  // Teclado virtual: combinar evaluaciones con letras descartadas en modo fácil
+  // Teclado virtual: calcular estado de cada letra
   const keyboardStatuses: Record<string, TileStatus> = useMemo(() => {
-    const statuses = computeKeyboardStatuses(evaluations);
-    for (const letter of discardedLetters) {
-      if (!statuses[letter]) {
-        statuses[letter] = 'absent';
-      }
-    }
-    return statuses;
-  }, [evaluations, discardedLetters]);
+    return computeKeyboardStatuses(evaluations);
+  }, [evaluations]);
 
-  // Asistencia para Modo Fácil: Descartar 3 letras que no están en la palabra
-  const discardLetters = useCallback(() => {
-    if (gameMode !== 'facil' || gameStatus !== 'IN_PROGRESS') return;
-
-    const targetSet = new Set(targetWord.split(''));
-    const currentEvaluated = new Set(Object.keys(computeKeyboardStatuses(evaluations)));
-    const alreadyDiscarded = new Set(discardedLetters);
-
-    const candidates = ALPHABET.filter(
-      letter => !targetSet.has(letter) && !currentEvaluated.has(letter) && !alreadyDiscarded.has(letter)
-    );
-
-    if (candidates.length === 0) {
-      onShowToast('Ya no quedan letras incorrectas por descartar', 'info');
-      return;
-    }
-
-    // Tomar hasta 3 letras al azar
-    const toDiscard = candidates.sort(() => Math.random() - 0.5).slice(0, 3);
-    setDiscardedLetters(prev => [...prev, ...toDiscard]);
-    onPlayKey();
-    onShowToast(`Se descartaron del teclado: ${toDiscard.join(', ')}`, 'info');
-  }, [gameMode, gameStatus, targetWord, evaluations, discardedLetters, onShowToast, onPlayKey]);
+  // Alternar vibración háptica
+  const toggleHaptics = useCallback(() => {
+    setHapticsEnabled(prev => !prev);
+  }, [setHapticsEnabled]);
 
   // Manejo de entrada de una letra
   const addLetter = useCallback((letter: string) => {
@@ -140,8 +152,9 @@ export function useGameState({
     if (currentGuess.length < wordLength) {
       setCurrentGuess(prev => prev + cleanChar);
       onPlayKey();
+      haptics.key(hapticsEnabled);
     }
-  }, [gameStatus, isRowEvaluating, currentGuess.length, wordLength, onPlayKey]);
+  }, [gameStatus, isRowEvaluating, currentGuess.length, wordLength, onPlayKey, hapticsEnabled]);
 
   // Manejo de borrado (Backspace)
   const removeLetter = useCallback(() => {
@@ -149,8 +162,9 @@ export function useGameState({
     if (currentGuess.length > 0) {
       setCurrentGuess(prev => prev.slice(0, -1));
       onPlayKey();
+      haptics.key(hapticsEnabled);
     }
-  }, [gameStatus, isRowEvaluating, currentGuess.length, onPlayKey]);
+  }, [gameStatus, isRowEvaluating, currentGuess.length, onPlayKey, hapticsEnabled]);
 
   // Enviar intento (Enter)
   const submitGuess = useCallback(() => {
@@ -159,9 +173,10 @@ export function useGameState({
     // Validación de longitud
     if (currentGuess.length !== wordLength) {
       onPlayError();
+      haptics.error(hapticsEnabled);
       setIsShakingRow(true);
       setTimeout(() => setIsShakingRow(false), 500);
-      onShowToast(`La palabra clave requiere exactamente ${wordLength} letras`, 'warning');
+      onShowToast(`La palabra requiere exactamente ${wordLength} letras`, 'warning');
       return;
     }
 
@@ -170,6 +185,7 @@ export function useGameState({
       const validation = validateHardMode(currentGuess, evaluations);
       if (!validation.valid) {
         onPlayError();
+        haptics.error(hapticsEnabled);
         setIsShakingRow(true);
         setTimeout(() => setIsShakingRow(false), 500);
         onShowToast(validation.reason || 'Regla de Modo Difícil violada', 'warning');
@@ -181,8 +197,9 @@ export function useGameState({
     const guessEvaluation = evaluateGuess(currentGuess, targetWord);
     const isWin = currentGuess === targetWord;
     const isLastAttempt = guesses.length + 1 >= maxAttempts;
+    const attemptNumber = guesses.length + 1;
 
-    // Sonidos escalonados para la animación de volteo
+    // Sonidos y chimes escalonados
     for (let i = 0; i < wordLength; i++) {
       setTimeout(() => {
         onPlayFlip(i);
@@ -200,8 +217,9 @@ export function useGameState({
       if (isWin) {
         setGameStatus('WON');
         onPlayWin();
+        haptics.success(hapticsEnabled);
 
-        // Lanzar confeti
+        // Lanzar confeti triunfal
         try {
           confetti({
             particleCount: 90,
@@ -212,12 +230,45 @@ export function useGameState({
           // Ignorar si canvas no está disponible
         }
 
-        onShowToast(`¡Excelente! Has dominado: ${targetWord}`, 'success');
+        // Calcular XP según el número de intento
+        const baseXP =
+          attemptNumber === 1
+            ? 100
+            : attemptNumber === 2
+            ? 80
+            : attemptNumber === 3
+            ? 60
+            : attemptNumber === 4
+            ? 40
+            : 25;
 
-        // Actualizar estadísticas de victoria
+        const bonusDailyXP = currentTab === 'diario' ? 40 : 0;
+        const totalEarnedXP = baseXP + bonusDailyXP;
+        setEarnedXp(totalEarnedXP);
+
+        onShowToast(`¡Correcto! +${totalEarnedXP} XP ganados`, 'success');
+
+        // Actualizar progreso general (XP y Racha Diaria)
+        setUserProgress(prev => {
+          let updatedStreak = prev.dailyStreak;
+          let updatedLastDate = prev.lastDailyDate;
+
+          if (currentTab === 'diario') {
+            const streakCalc = computeDailyStreak(prev.lastDailyDate, prev.dailyStreak, todayDateStr);
+            updatedStreak = streakCalc.newStreak;
+            updatedLastDate = todayDateStr;
+          }
+
+          return {
+            xp: prev.xp + totalEarnedXP,
+            dailyStreak: updatedStreak,
+            lastDailyDate: updatedLastDate
+          };
+        });
+
+        // Actualizar estadísticas por tema
         setStatsMap(prevAll => {
           const prev = prevAll[topicId] || INITIAL_STATS;
-          const attemptNumber = guesses.length + 1;
           const alreadySolved = prev.solvedIds.includes(currentQuestion.id);
 
           const newDistribution = { ...prev.guessDistribution };
@@ -240,7 +291,7 @@ export function useGameState({
           };
         });
 
-        // Abrir modal pedagógico tras breve pausa
+        // Abrir modal con Micro-Tips tras breve pausa
         setTimeout(() => {
           setExplanationModalOpen(true);
         }, 800);
@@ -248,6 +299,7 @@ export function useGameState({
       } else if (isLastAttempt) {
         setGameStatus('LOST');
         onPlayGameOver();
+        haptics.error(hapticsEnabled);
         onShowToast(`Fin de intentos. La respuesta era: ${targetWord}`, 'error');
 
         // Actualizar estadísticas de derrota
@@ -279,11 +331,15 @@ export function useGameState({
     targetWord,
     guesses.length,
     maxAttempts,
+    hapticsEnabled,
+    currentTab,
+    todayDateStr,
     onPlayError,
     onPlayFlip,
     onShowToast,
     onPlayWin,
     setStatsMap,
+    setUserProgress,
     topicId,
     currentQuestion.id,
     onPlayGameOver
@@ -310,35 +366,50 @@ export function useGameState({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [explanationModalOpen, submitGuess, removeLetter, addLetter]);
 
-  // Navegación entre preguntas
+  // Navegación entre preguntas (en modo práctica)
   const nextQuestion = useCallback(() => {
     setExplanationModalOpen(false);
-    setQuestionIndex(prev => {
-      const maxIndex = currentTopic.preguntas.length - 1;
-      return prev < maxIndex ? prev + 1 : 0;
-    });
-  }, [setQuestionIndex, currentTopic.preguntas.length]);
+    if (currentTab === 'practica') {
+      setPracticeQuestionIndex(prev => {
+        const maxIndex = currentTopic.preguntas.length - 1;
+        return prev < maxIndex ? prev + 1 : 0;
+      });
+    }
+  }, [setPracticeQuestionIndex, currentTopic.preguntas.length, currentTab]);
 
   const prevQuestion = useCallback(() => {
     setExplanationModalOpen(false);
-    setQuestionIndex(prev => {
-      return prev > 0 ? prev - 1 : currentTopic.preguntas.length - 1;
-    });
-  }, [setQuestionIndex, currentTopic.preguntas.length]);
+    if (currentTab === 'practica') {
+      setPracticeQuestionIndex(prev => {
+        return prev > 0 ? prev - 1 : currentTopic.preguntas.length - 1;
+      });
+    }
+  }, [setPracticeQuestionIndex, currentTopic.preguntas.length, currentTab]);
 
   const jumpToQuestion = useCallback((idx: number) => {
     setExplanationModalOpen(false);
-    setQuestionIndex(idx);
-  }, [setQuestionIndex]);
+    setCurrentTab('practica');
+    setPracticeQuestionIndex(idx);
+  }, [setPracticeQuestionIndex]);
 
+  // Pistas con Active Recall
   const toggleHint = useCallback(() => {
+    // Si la pista está bloqueada por reglas
     if (gameMode === 'dificil' && guesses.length < maxAttempts - 1) {
-      onShowToast('Modo Difícil: Las pistas están bloqueadas hasta el último intento', 'warning');
+      onShowToast('Modo Difícil: La pista está bloqueada hasta el último intento', 'warning');
+      haptics.error(hapticsEnabled);
       return;
     }
+    if (gameMode === 'normal' && guesses.length === 0) {
+      onShowToast('Haz al menos 1 intento antes de pedir la pista', 'warning');
+      haptics.error(hapticsEnabled);
+      return;
+    }
+
     setShowHint(prev => !prev);
     onPlayKey();
-  }, [gameMode, guesses.length, maxAttempts, onShowToast, onPlayKey]);
+    haptics.key(hapticsEnabled);
+  }, [gameMode, guesses.length, maxAttempts, hapticsEnabled, onShowToast, onPlayKey]);
 
   const changeTopic = useCallback((newTopicId: string) => {
     setTopicId(newTopicId);
@@ -354,11 +425,18 @@ export function useGameState({
   }, [setStatsMap, topicId, onShowToast]);
 
   return {
+    currentTab,
+    setCurrentTab,
+    todayDateStr,
+    dailyCompletedToday,
+    userProgress,
     gameMode,
     setGameMode,
+    hapticsEnabled,
+    toggleHaptics,
     maxAttempts,
     currentTopic,
-    questionIndex: safeQuestionIndex,
+    questionIndex,
     currentQuestion,
     targetWord,
     wordLength,
@@ -371,6 +449,7 @@ export function useGameState({
     isShakingRow,
     explanationModalOpen,
     setExplanationModalOpen,
+    earnedXp,
     keyboardStatuses,
     currentStats,
     addLetter,
@@ -381,7 +460,6 @@ export function useGameState({
     jumpToQuestion,
     toggleHint,
     changeTopic,
-    resetCurrentStats,
-    discardLetters
+    resetCurrentStats
   };
 }
